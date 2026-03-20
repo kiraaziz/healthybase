@@ -6,30 +6,29 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: mydb
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d mydb"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   minio:
-    image: minio/minio
-    restart: unless-stopped
+    image: quay.io/minio/minio:latest
+    command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
       - "9001:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-    command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "mc", "ready", "local"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -44,14 +43,13 @@ services:
       /bin/sh -c "
       mc alias set local http://minio:9000 minioadmin minioadmin;
       mc mb --ignore-existing local/database-backups;
-      exit 0;
+      tail -f /dev/null
       "
 
   mailpit:
     image: axllent/mailpit
     restart: unless-stopped
     ports:
-      - "1025:1025"
       - "8025:8025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
@@ -70,10 +68,10 @@ services:
     environment:
       APP_URL: http://localhost:3000
       NEXTAUTH_URL: http://localhost:3000
-      AUTH_SECRET: CtjCwdIBhDNzqHYTYmKaPhET0w1UiFIDAvOHkpYZy3w=
-      JOB_KEY: 9ef2833f5ba359ad12a94eeff56dfa4de2ddbf0c3441defa74f689637bc1dbc1
+      AUTH_SECRET: my-super-secret-key
+      JOB_KEY: my-job-key
       ENTERPRISE_EMAIL: support@example.com
-      DATABASE_URL: postgresql://admin:secret@postgres:5432/mydb
+      DATABASE_URL: postgresql://admin:password@postgres:5432/postgres
       MINIO_URL: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
@@ -86,6 +84,8 @@ services:
       EMAIL_FROM: support@example.com
     depends_on:
       postgres:
+        condition: service_healthy
+      mailpit:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]

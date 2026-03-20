@@ -5,28 +5,29 @@ services:
     environment:
       POSTGRES_USER: ${SERVICE_USER_POSTGRES}
       POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${SERVICE_USER_POSTGRES} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${SERVICE_USER_POSTGRES} -d ${POSTGRES_DB:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   minio:
-    image: minio/minio
-    restart: unless-stopped
+    image: 'quay.io/minio/minio:latest'
+    command: 'server /data --console-address ":9001"'
     environment:
-      SERVICE_FQDN_MINIO_9001:
-      SERVICE_FQDN_MINIO_9000:
-      MINIO_ROOT_USER: ${SERVICE_USER_MINIO}
-      MINIO_ROOT_PASSWORD: ${SERVICE_PASSWORD_MINIO}
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio_data:/data
+      - MINIO_SERVER_URL=$MINIO_SERVER_URL
+      - MINIO_BROWSER_REDIRECT_URL=$MINIO_BROWSER_REDIRECT_URL
+      - MINIO_ROOT_USER=$SERVICE_USER_MINIO
+      - MINIO_ROOT_PASSWORD=$SERVICE_PASSWORD_MINIO
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9000/minio/health/live"]
+      test:
+        - CMD
+        - mc
+        - ready
+        - local
       interval: 5s
       timeout: 5s
       retries: 5
@@ -41,7 +42,7 @@ services:
       /bin/sh -c "
       mc alias set local http://minio:9000 ${SERVICE_USER_MINIO} ${SERVICE_PASSWORD_MINIO};
       mc mb --ignore-existing local/${MINIO_BUCKET_NAME};
-      exit 0;
+      tail -f /dev/null
       "
 
   mailpit:
@@ -66,18 +67,18 @@ services:
       NEXTAUTH_URL: ${SERVICE_URL_HEALTHYBASE_3000}
       AUTH_SECRET: ${SERVICE_BASE64_64_AUTHSECRET}
       JOB_KEY: ${SERVICE_PASSWORD_JOBKEY}
-      ENTERPRISE_EMAIL: ${ENTERPRISE_EMAIL}
-      DATABASE_URL: postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/${POSTGRES_DB}
-      MINIO_URL: ${SERVICE_URL_MINIO_9000}
+      ENTERPRISE_EMAIL: ${ENTERPRISE_EMAIL:-support@example.com}
+      DATABASE_URL: postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/${POSTGRES_DB:-postgres}
+      MINIO_URL: http://minio:9000
       MINIO_ACCESS_KEY: ${SERVICE_USER_MINIO}
       MINIO_SECRET_KEY: ${SERVICE_PASSWORD_MINIO}
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-database-backups}
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
       SMTP_SECURE: false
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      EMAIL_FROM: ${EMAIL_FROM}
+      SMTP_USER: ${SMTP_USER:-any}
+      SMTP_PASS: ${SMTP_PASS:-any}
+      EMAIL_FROM: ${EMAIL_FROM:-support@example.com}
     depends_on:
       postgres:
         condition: service_healthy
