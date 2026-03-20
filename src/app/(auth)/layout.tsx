@@ -43,7 +43,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
 async function Renderer({ children }: { children: React.ReactNode }) {
 
   const session: any = await auth()
-  if (session.user) return redirect("/app")
+  if (session?.user) return redirect("/app")
 
   return <OuterLayout>
     <div className='w-full mx-auto flex items-center justify-center h-[calc(100svh_-_5rem)]'>

@@ -41,11 +41,10 @@ async function Renderer({ children }: { children: React.ReactNode }) {
 
     const session = (await auth()) as any
 
-    if (!session.user) {
+    if (!session?.user) {
         return redirect("/signin")
     }
 
-    console.log(session, "------------------------------------------------")
     const user = session.user
     const projects: any = await useGetProjects()
 
