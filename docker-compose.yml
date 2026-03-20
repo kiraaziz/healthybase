@@ -55,20 +55,20 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
-  healthybase:
+healthybase:
     image: kiraaziz/healthybase:latest
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       SERVICE_FQDN_HEALTHYBASE_3000:
-      APP_URL: ${SERVICE_FQDN_HEALTHYBASE_3000:-http://localhost:3000}
-      NEXTAUTH_URL: ${SERVICE_FQDN_HEALTHYBASE_3000:-http://localhost:3000}
+      APP_URL: ${SERVICE_URL_HEALTHYBASE:-http://localhost:3000}
+      NEXTAUTH_URL: ${SERVICE_URL_HEALTHYBASE:-http://localhost:3000}
       AUTH_SECRET: ${SERVICE_BASE64_64_AUTHSECRET:-CtjCwdIBhDNzqHYTYmKaPhET0w1UiFIDAvOHkpYZy3w=}
       JOB_KEY: ${SERVICE_PASSWORD_JOBKEY:-9ef2833f5ba359ad12a94eeff56dfa4de2ddbf0c3441defa74f689637bc1dbc1}
       ENTERPRISE_EMAIL: ${ENTERPRISE_EMAIL:-support@example.com}
       DATABASE_URL: postgresql://${SERVICE_USER_POSTGRES:-admin}:${SERVICE_PASSWORD_POSTGRES:-secret}@postgres:5432/${POSTGRES_DB:-mydb}
-      MINIO_URL: ${SERVICE_FQDN_MINIO_9000:-http://minio:9000}
+      MINIO_URL: ${SERVICE_URL_MINIO:-http://minio:9000}
       MINIO_ACCESS_KEY: ${SERVICE_USER_MINIO:-minioadmin}
       MINIO_SECRET_KEY: ${SERVICE_PASSWORD_MINIO:-minioadmin}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-database-backups}
