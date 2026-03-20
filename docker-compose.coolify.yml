@@ -2,16 +2,14 @@ services:
   postgres:
     image: postgres:17
     restart: unless-stopped
-    ports:
-      - "5432:5432"
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${SERVICE_USER_POSTGRES}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d mydb"]
+      test: ["CMD-SHELL", "pg_isready -U ${SERVICE_USER_POSTGRES} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,12 +17,11 @@ services:
   minio:
     image: minio/minio
     restart: unless-stopped
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      SERVICE_FQDN_MINIO_9001:
+      SERVICE_FQDN_MINIO_9000:
+      MINIO_ROOT_USER: ${SERVICE_USER_MINIO}
+      MINIO_ROOT_PASSWORD: ${SERVICE_PASSWORD_MINIO}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
@@ -42,18 +39,16 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      mc alias set local http://minio:9000 minioadmin minioadmin;
-      mc mb --ignore-existing local/database-backups;
+      mc alias set local http://minio:9000 ${SERVICE_USER_MINIO} ${SERVICE_PASSWORD_MINIO};
+      mc mb --ignore-existing local/${MINIO_BUCKET_NAME};
       exit 0;
       "
 
   mailpit:
     image: axllent/mailpit
     restart: unless-stopped
-    ports:
-      - "1025:1025"
-      - "8025:8025"
     environment:
+      SERVICE_FQDN_MAILPIT_8025:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
     healthcheck:
@@ -65,25 +60,24 @@ services:
   healthybase:
     image: kiraaziz/healthybase:latest
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
-      APP_URL: http://localhost:3000
-      NEXTAUTH_URL: http://localhost:3000
-      AUTH_SECRET: CtjCwdIBhDNzqHYTYmKaPhET0w1UiFIDAvOHkpYZy3w=
-      JOB_KEY: 9ef2833f5ba359ad12a94eeff56dfa4de2ddbf0c3441defa74f689637bc1dbc1
-      ENTERPRISE_EMAIL: support@example.com
-      DATABASE_URL: postgresql://admin:secret@postgres:5432/mydb
-      MINIO_URL: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET_NAME: database-backups
+      SERVICE_FQDN_HEALTHYBASE_3000:
+      APP_URL: ${SERVICE_URL_HEALTHYBASE_3000}
+      NEXTAUTH_URL: ${SERVICE_URL_HEALTHYBASE_3000}
+      AUTH_SECRET: ${SERVICE_BASE64_64_AUTHSECRET}
+      JOB_KEY: ${SERVICE_PASSWORD_JOBKEY}
+      ENTERPRISE_EMAIL: ${ENTERPRISE_EMAIL}
+      DATABASE_URL: postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/${POSTGRES_DB}
+      MINIO_URL: ${SERVICE_URL_MINIO_9000}
+      MINIO_ACCESS_KEY: ${SERVICE_USER_MINIO}
+      MINIO_SECRET_KEY: ${SERVICE_PASSWORD_MINIO}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
       SMTP_SECURE: false
-      SMTP_USER: any
-      SMTP_PASS: any
-      EMAIL_FROM: support@example.com
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      EMAIL_FROM: ${EMAIL_FROM}
     depends_on:
       postgres:
         condition: service_healthy
