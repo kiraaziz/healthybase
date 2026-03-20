@@ -231,8 +231,8 @@ EMAIL_FROM=
 │  └─────────┘                               │
 │       │         ┌──────────┐               │
 │       └────────▶│ Mailpit  │               │
-│                 │  :1025   │               │
-│                 └──────────┘               │
+│                 │  :1025   │                │
+│                 └──────────┘                │
 └─────────────────────────────────────────────┘
 ```
 
@@ -240,8 +240,34 @@ EMAIL_FROM=
 
 ## 📄 License
 
-MIT — free to use, modify, and self-host.
+This project is free to use, modify, and self-host under the following condition:
 
+> **You must keep the "Powered by [Healthy Base](https://healthybase.cloud)" attribution visible in your deployment's UI.**
+
+Removing or hiding the attribution without written permission from [@kiraaziz](https://github.com/kiraaziz) is not allowed.
+```
+
+Also create a `LICENSE` file in your repo root:
+```
+Custom Attribution License
+
+Copyright (c) 2026 kiraaziz (https://github.com/kiraaziz)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software to use, copy, modify, merge, and distribute it, subject to
+the following conditions:
+
+1. ATTRIBUTION REQUIRED: Any deployment, fork, or modified version of this
+   software must display a visible "Powered by Healthy Base" notice linking
+   to https://healthybase.cloud in the user interface.
+
+2. The attribution must be clearly visible to end users and must not be
+   hidden, removed, or obscured in any way.
+
+3. Commercial use is permitted provided the attribution requirement above
+   is met.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 ---
 
 ## 🌐 Hosted Version
