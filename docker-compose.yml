@@ -55,7 +55,7 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
-healthybase:
+  healthybase:
     image: kiraaziz/healthybase:latest
     restart: unless-stopped
     ports:

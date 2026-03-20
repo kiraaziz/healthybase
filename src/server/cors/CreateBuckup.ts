@@ -106,6 +106,7 @@ async function CreateBuckup({ projectId, userId, isJob }: any) {
         const env = {
             ...process.env,
             PGPASSWORD: settings.dbPassword,
+            PGSSLMODE: "disable",   
         }
 
         const pgDumpCommand = `pg_dump -h ${settings.dbHost} -p ${settings.dbPort} -U ${settings.dbUser} -d ${settings.dbName} -F p --clean --if-exists`;
