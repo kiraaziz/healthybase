@@ -1,6 +1,7 @@
 
 import { S3Client } from "@aws-sdk/client-s3";
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
 const s3 = new S3Client({
     region: "us-east-1",
