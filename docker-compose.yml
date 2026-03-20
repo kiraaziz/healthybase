@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:17
-    container_name: postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -19,24 +18,21 @@ services:
 
   minio:
     image: minio/minio
-    container_name: minio
     restart: unless-stopped
     ports:
       - "9000:9000"
       - "9001:9001"
     environment:
-      SERVICE_FQDN_MINIO_9001: ${SERVICE_FQDN_MINIO_9001:-http://localhost:9001}
-      SERVICE_FQDN_MINIO_9000: ${SERVICE_FQDN_MINIO_9000:-http://localhost:9000}
+      SERVICE_FQDN_MINIO_9001:
+      SERVICE_FQDN_MINIO_9000:
       MINIO_ROOT_USER: ${SERVICE_USER_MINIO:-minioadmin}
       MINIO_ROOT_PASSWORD: ${SERVICE_PASSWORD_MINIO:-minioadmin}
-      MINIO_BROWSER_REDIRECT_URL: ${SERVICE_FQDN_MINIO_9001:-http://localhost:9001}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
 
   minio-init:
     image: minio/mc
-    container_name: minio-init
     restart: on-failure
     depends_on:
       - minio
@@ -50,24 +46,22 @@ services:
 
   mailpit:
     image: axllent/mailpit
-    container_name: mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"
       - "8025:8025"
     environment:
-      SERVICE_FQDN_MAILPIT_8025: ${SERVICE_FQDN_MAILPIT_8025:-http://localhost:8025}
+      SERVICE_FQDN_MAILPIT_8025:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
   healthybase:
     image: kiraaziz/healthybase:latest
-    container_name: nextjs
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      SERVICE_FQDN_HEALTHYBASE_3000: ${SERVICE_FQDN_HEALTHYBASE_3000:-http://localhost:3000}
+      SERVICE_FQDN_HEALTHYBASE_3000:
       APP_URL: ${SERVICE_FQDN_HEALTHYBASE_3000:-http://localhost:3000}
       NEXTAUTH_URL: ${SERVICE_FQDN_HEALTHYBASE_3000:-http://localhost:3000}
       AUTH_SECRET: ${SERVICE_BASE64_64_AUTHSECRET:-CtjCwdIBhDNzqHYTYmKaPhET0w1UiFIDAvOHkpYZy3w=}
